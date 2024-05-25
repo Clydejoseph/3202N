@@ -1,0 +1,23 @@
+.home-header{
+    color: black;
+    text-align: center;
+    margin: 40px;
+}
+
+.dashboard{
+    padding: 40px;
+}
+
+#cardbox{
+    background-color: rgb(18, 21, 59);
+    color: white;
+    height: auto;
+    width: auto;
+}
+
+img{
+    height: 100px;
+    width: auto;
+    margin: auto;
+    margin-bottom: 50px;
+}
