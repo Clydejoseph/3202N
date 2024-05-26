@@ -14,10 +14,7 @@ import PieChart from '../component/charts/PieChart'
 
 function Dashboard() {
 
-
-    
-    const activeAcc = sessionStorage.getItem('account') == null ? 'default' : JSON.parse(sessionStorage.getItem('account'));
-    const auth = activeAcc.auth;
+    const auth = 'Head';
     const [item , setItem] = useState([]);
 
     useEffect(() =>{
@@ -31,22 +28,12 @@ function Dashboard() {
     const [req , setreq] = useState('');
 
     useEffect(() =>{
-        if(auth === 'Head'){
             axios.get('http://localhost:5000/requestno').then((res) =>{
             setreq(res.data[0].reqNo);
             console.log(res.data)
-            }).catch((error) =>{
-                console.log(error);
-            })
-        }else{
-            axios.get('http://localhost:5000/requestno-admin').then((res) =>{
-                setreq(res.data[0].reqNo);
-                console.log(res.data)
-            }).catch((error) =>{
-                console.log(error);
-            })
-        }
-        
+                }).catch((error) =>{
+                    console.log(error);
+                })  
     },[])
 
 // ----------------------------------------------------------------------
@@ -112,8 +99,6 @@ const [donate , setdonate] = useState('');
     <VStack align={'center'} padding={'0.5rem'}>
         <HStack flexWrap={'wrap'} width={'80%'} justify={'center'} >
             {dash}
-            {auth.toLowerCase() == 'admin' ? <CardDash orientation={'row'} title={'request'} count={req}/> : null}
-            {auth.toLowerCase() == 'head' ? <CardDash orientation={'row'} title={'request'} count={req}/> : null}
         </HStack>
         
         <HStack align={'stretch'} width={'80vw'} >

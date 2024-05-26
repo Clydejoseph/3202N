@@ -54,13 +54,14 @@ app.get('/requestno-admin' , (req , res)=>{
 })
 
 app.get('/newequipment' , (err ,res) =>{
-  const sql = 'SELECT i.id ,i.name , i.serial_no , i.location FROM item i WHERE DAY(i.date_acquired) = DAY(CURDATE());';
+  const sql = 'SELECT i.asset_code ,i.name , i.serial_no , i.location FROM item i WHERE status = "New";';
 
   connection.query(sql ,(err, result) =>{
     if(err){
       return res.status(500).json({ error: 'Server error' });
     }
     else{
+      console.log(result)
       return res.status(200).send(result);
     }  
   })
@@ -156,35 +157,6 @@ app.get('/report', async function (req, res){
 // });
 
 
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
-
-  // check if the email and password exist
-  const sql = 'SELECT id, fname,lname,email, authority FROM user WHERE status = "active" AND email = ? AND password = ?';
-  connection.query(sql, [email, password], (error, results) => {
-    if (error) {
-      console.error('Error executing SQL query:', error);
-      return res.status(500).json({ error: 'Server error' });
-    }
-
-    if (results.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // success
-    const userData = {
-      id: results[0].id,
-      email: results[0].email,
-      auth: results[0].authority,
-      fname: results[0].fname,
-      lname: results[0].lname,
-    };
-
-    // req.session.userData = userData;
-
-    return res.json(userData);
-  });
-});
 
 app.get('/asset', async function (req, res) {
     // req.body

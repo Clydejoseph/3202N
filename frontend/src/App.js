@@ -1,7 +1,5 @@
 import {Route, Routes} from "react-router-dom";
-import Home from "./Homepage";
-
-import Login from "./Login";
+import TechHome from './pages/labTech/Tech-Home';
 
 
 
@@ -9,8 +7,7 @@ function App() {
   return (
     <>
             <Routes>
-              <Route exact path='/*' element={<Home />}></Route>
-              <Route exact path='/login' element={<Login />}></Route>
+              <Route exact path='/*' element={<TechHome />}></Route>
               <Route exact path="*" Component={errorRouteHandling}></Route>
             </Routes>
     </>

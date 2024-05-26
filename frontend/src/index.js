@@ -18,16 +18,3 @@ root.render(
 );
 
 
-
-if(sessionStorage.getItem('account') === null){
-  sessionStorage.setItem('account' ,'null');
-}
-
-
-/*<BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Login />}></Route>
-        <Route path='/app' element={<App />}></Route>
-        <Route path='/home' element={<Home/>}></Route>
-      </Routes>
-    </BrowserRouter> */
