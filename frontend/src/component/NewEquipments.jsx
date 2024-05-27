@@ -21,7 +21,8 @@ function NewEquipment({data}) {
                 <Thead>
                 <Tr>
                     <Th>Asset Code</Th>
-                    <Th>Name</Th>
+                    <Th>Item</Th>
+                    <Th>Brand</Th>
                     <Th>Serial No.</Th>
                     <Th>Location</Th>
                 </Tr>
@@ -32,6 +33,7 @@ function NewEquipment({data}) {
                       <Tr key={indx} textAlign={'center'}>
                       <Td>{elem.asset_code}</Td>
                       <Td>{elem.name}</Td>
+                      <Td>{elem.brand}</Td>
                       <Td>{elem.serial_no}</Td>
                       <Td>{elem.location}</Td>
                       </Tr>

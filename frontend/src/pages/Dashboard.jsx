@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import config from '../config'
 
 import '../css/dashboardcss.css'
 
@@ -24,23 +25,13 @@ function Dashboard() {
             console.log(error);
         })
     },[])
-// ----------------------------------------------------------------------
-    const [req , setreq] = useState('');
 
-    useEffect(() =>{
-            axios.get('http://localhost:5000/requestno').then((res) =>{
-            setreq(res.data[0].reqNo);
-            console.log(res.data)
-                }).catch((error) =>{
-                    console.log(error);
-                })  
-    },[])
 
 // ----------------------------------------------------------------------
     const [newEquip , setNew] = useState([]);
 
     useEffect(() =>{
-        axios.get('http://localhost:5000/newequipment').then((res)=>{
+        axios.get(`${config.API}/newequipment`).then((res)=>{
             setNew(res.data);
             console.log(res.data)
         }).catch((error) =>{
@@ -57,14 +48,14 @@ const [dispose , setdispose] = useState('');
 const [donate , setdonate] = useState('');
 
     useEffect(() =>{
-        axios.get('http://localhost:5000/actives').then((res)=>{
+        axios.get(`${config.API}/actives`).then((res)=>{
             setactive(res.data[0]);
         }).catch((error) =>{
             console.log(error);
         })
     },[])
     useEffect(() =>{
-        axios.get('http://localhost:5000/defective').then((res)=>{
+        axios.get(`${config.API}/defective`).then((res)=>{
             setdefective(res.data[0]);
 
         }).catch((error) =>{
@@ -72,14 +63,14 @@ const [donate , setdonate] = useState('');
         })
     },[])
     useEffect(() =>{
-        axios.get('http://localhost:5000/dispose').then((res)=>{
+        axios.get(`${config.API}/dispose`).then((res)=>{
             setdispose(res.data[0]);
         }).catch((error) =>{
             console.log(error);
         })
     },[])
     useEffect(() =>{
-        axios.get('http://localhost:5000/donate').then((res)=>{
+        axios.get(`${config.API}/donate`).then((res)=>{
             setdonate(res.data[0]);
         }).catch((error) =>{
             console.log(error);

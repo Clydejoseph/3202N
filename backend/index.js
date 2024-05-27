@@ -1,5 +1,6 @@
 const express = require('express')
-const mysql = require('mysql')
+require('dotenv').config();
+const mysql = require('mysql2')
 const cors = require('cors')
 const bp = require('body-parser')
 const jwt = require('jsonwebtoken')
@@ -9,31 +10,56 @@ app.use(bp.json())
 app.use(bp.urlencoded({ extended: true }))
 app.use(cors())
 app.use(express.json())
+const secretKey = 'imong_mama';
 
 var connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'root',
-  password : '',
-  database : 'inventory-system'
+  host     : 'bkuiydztdar7unewbvuk-mysql.services.clever-cloud.com',
+  user     : 'urnaiq8petcvhtek',
+  password : 'qXCdaCkH1813rMGB2Aik',
+  database : 'bkuiydztdar7unewbvuk'
 });
 
-app.get('/users', (req, res) => {
-  connection.query(
-    "SELECT *, CONCAT(fname, ' ', lname) AS name FROM user WHERE status = 'Active'",
-    (error, result) => {
-      if(error){
-        console.log(error);
-      }
-      console.log(results)
-      res.json(result);
-  });
-})
+connection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to the database:', err.stack);
+    return;
+  }
+  console.log('Connected to the database as id ' + connection.threadId);
+});
+
+// const verifyToken = (req, res, next) => {
+//   const token = req.headers['authorization'];
+//   if (!token) {
+//       return res.status(403).send({ auth: false, message: 'No token provided.' });
+//   }
+
+//   jwt.verify(token, secretKey, (err, decoded) => {
+//       if (err) {
+//           return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
+//       }
+
+//       req.userId = decoded.id;
+//       next();
+//   });
+// };
+
+// app.get('/users', verifyToken, (req, res) => {
+//   connection.query(
+//     "SELECT *, CONCAT(fname, ' ', lname) AS name FROM user WHERE status = 'Active'",
+//     (error, result) => {
+//       if(error){
+//         console.log(error);
+//       }
+//       console.log(results)
+//       res.json(result);
+//   });
+// })
 
 
 app.post('/login', (req, res) => {
   const email = req.body.email
-  const password = req.body.passsword
-
+  const password = req.body.password
+  console.log(password)
   // check if the email and password exist
   const sql = 'SELECT id, fname, lname, email FROM user WHERE status = "active" AND email = ? AND password = ?';
   connection.query(sql, [email, password], (error, results) => {
@@ -41,20 +67,23 @@ app.post('/login', (req, res) => {
       console.error('Error executing SQL query:', error);
       return res.status(500).json({ error: 'Server error' });
     }
-
+    console.log(results)
     if (results.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    const token = jwt.sign({ id: results[0].id }, secretKey, { expiresIn: '1h' });
 
     // success
     const userData = {
       id: results[0].id,
       email: results[0].email,
-      auth: results[0].authority,
       fname: results[0].fname,
       lname: results[0].lname,
+      token: token
     };
 
+    console.log(userData)
     return res.json(userData);
   });
 })
@@ -71,40 +100,16 @@ app.get('/itemcount' , (req , res) =>{
     }
   })
 })
-// app.get('/requestno' , (req , res)=>{
-//   const sql ='SELECT COUNT(*) as reqNo FROM request WHERE status1 = "Pending";';
 
-//   connection.query(sql ,(err, result) =>{
-//     if(err){
-//       return res.status(500).json({ error: 'Server error' });
-//     }
-//     else{
-//       return res.status(200).send(result);
-//     }  
-//   })
-// })
-// app.get('/requestno-admin' , (req , res)=>{
-//   const sql ='SELECT COUNT(*) as reqNo FROM request WHERE status2 = "Pending";';
-
-//   connection.query(sql ,(err, result) =>{
-//     if(err){
-//       return res.status(500).json({ error: 'Server error' });
-//     }
-//     else{
-//       return res.status(200).send(result);
-//     }  
-//   })
-// })
 
 app.get('/newequipment' , (err ,res) =>{
-  const sql = 'SELECT i.asset_code ,i.name , i.serial_no , i.location FROM item i WHERE status = "New";';
+  const sql = 'SELECT i.asset_code ,i.name , i.serial_no , i.location, i.brand, c.name FROM item i, category c WHERE i. status = "New" AND i.categoryID = c.id;';
 
   connection.query(sql ,(err, result) =>{
     if(err){
       return res.status(500).json({ error: 'Server error' });
     }
     else{
-      console.log(result)
       return res.status(200).send(result);
     }  
   })
@@ -171,34 +176,6 @@ app.get('/donate' , (err ,res) =>{
     }
   })
 })
-
-
-app.get('/report', async function (req, res){
-  connection.query(
-    "SELECT COUNT(*) AS item_count, c.name AS item_name FROM `item` i, `category` c WHERE i.categoryID = c.id AND MONTH(i.date_acquired) = MONTH(CURDATE()) GROUP BY i.categoryID;",
-    (error, result) => {
-      if(error){
-        console.log(error);
-      }
-
-      res.json(result);
-    }
-  )
-});
-
-// app.get('/report-requests', async function (req, res){
-//   connection.query(
-//     "SELECT COUNT(*) AS req_count FROM request WHERE MONTH(date_requested) = MONTH(CURDATE());",
-//     (error, result) => {
-//       if(error){
-//         console.log(error);
-//       }
-
-//       res.json(result);
-//     }
-//   )
-// });
-
 
 
 app.get('/asset', async function (req, res) {
@@ -335,102 +312,6 @@ app.post('/asset-update', (req, res) => {
     })
     
   });
-
-
-
-
-// app.get('/request', async function (req, res) {
-   
-//     connection.query(
-//       'SELECT r.*, CONCAT(u.fname, " ", u.lname) AS requestor, c.name as item_requested FROM `user` u, `request` r, `category` c WHERE r.userID = u.id AND r.categoryID = c.id AND status1 = "Pending" ORDER BY date_requested DESC ;',
-//       function (error, results, fields) {
-//       if (error) throw error;
-//       // console.log(results);
-//       res.json(results) //send
-//     });
-// })
-
-// app.get('/requestTech', async function (req, res) {
-   
-//   connection.query(
-//     'SELECT r.*, CONCAT(u.fname, " ", u.lname) AS requestor, c.name as item_requested FROM `user` u, `request` r, `category` c WHERE r.userID = u.id AND r.categoryID = c.id ORDER BY date_requested DESC ;',
-//     function (error, results, fields) {
-//     if (error) throw error;
-//     // console.log(results);
-//     res.json(results) //send
-//   });
-// })
-
-// app.get('/requestAdmin', async function (req, res) {
-   
-//   connection.query(
-//     'SELECT r.*, CONCAT(u.fname, " ", u.lname) AS requestor, c.name AS item_requested FROM `user` u, `request` r, `category` c WHERE r.userID = u.id AND r.categoryID = c.id AND status2 = "Pending" ORDER BY date_requested DESC ;',
-//     function (error, results, fields) {
-//     if (error) throw error;
-
-//     res.json(results) 
-//   });
-// })
-
-// app.post('/request-create', (req, res) => {
-//   const item = req.body;
-
-//   // connection.query(
-//   //   "SELECT COUNT(*) AS stock FROM `item` WHERE categoryID = " + item ,
-//   // )
-
-//   connection.query(
-//     "INSERT INTO request (name, description, type, quantity, date_requested, date_needed, status1, status2, unit, unit_cost, total_amount, payee, payment_instruction, labor_cost, categoryID, userID) VALUES (?,?,?,?,CURDATE(),?,?,?,?,?,?,?,?,?,?,?)",
-//     [
-//       item.name,
-//       item.description,
-//       item.type,
-//       item.quantity,
-//       item.date_needed,
-//       item.status1,
-//       item.status2,
-//       item.unit,
-//       item.unit_cost,
-//       item.total_amount,
-//       item.payee,
-//       item.instruction,
-//       item.labor_cost,
-//       item.item,
-//       item.user_id
-//     ],
-//     (error, result) => {
-//       if (error) {
-//         console.log(error);
-//       }
-//     }
-//   );
-// });
-
-app.post('/request-status1', (req, res) => {
-    const data = req.body;
-
-    connection.query(
-      "UPDATE request SET status1 = '" + data.status + "' WHERE id = " + data.id,
-      (error, result) => {
-        if(error){
-          console.log(error);
-        }
-      }
-    )
-});
-
-app.post('/request-status2', (req, res) => {
-  const data = req.body;
-
-  connection.query(
-    "UPDATE request SET status2 = '" + data.status + "' WHERE id = " + data.id,
-    (error, result) => {
-      if(error){
-        console.log(error);
-      }
-    }
-  )
-});
 
 
 
