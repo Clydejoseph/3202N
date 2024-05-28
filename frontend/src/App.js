@@ -1,5 +1,6 @@
 import {Route, Routes} from "react-router-dom";
 import TechHome from './pages/labTech/Tech-Home';
+import TechAsset from './pages/labTech/Tech-Asset';
 import {useState, useEffect, React} from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
@@ -70,6 +71,7 @@ function App() {
     <>
       <Routes>
         <Route path="/dashboard" element={<TechHome />} /> {/* Define the dashboard route */}
+        <Route path="/asset" element={<TechAsset />} />
         <Route path="/" element={<Login />} /> {/* Define the login route */}
       </Routes>
     </>
