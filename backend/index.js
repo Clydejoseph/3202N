@@ -196,8 +196,6 @@ app.post('/asset-create', (req, res) => {
             }
 
             const newAssetCode = results[0].asset_code;
-            const newItemID = results[0].ID;
-            const dateToday = results[0].current_date;
   
             connection.query(
               "UPDATE item SET asset_code = ? WHERE id = ?",
@@ -206,21 +204,6 @@ app.post('/asset-create', (req, res) => {
                 if (error) {
                   console.log(error);
                 }
-
-                connection.query(
-                  "INSERT INTO log (activity, date_done, userID, itemID) VALUES (?,?,?,?)",
-                  [
-                    'An item has been added to the inventory.',
-                    dateToday,
-                    item.user_id,
-                    newItemID
-                  ],
-                  (error, logResult) => {
-                    if(error) {
-                      console.log(error);
-                    }
-                  }
-                )
                 // return res.json({ item });
               }
             );
@@ -240,93 +223,46 @@ app.post('/asset-update', (req, res) => {
         if(error){
           console.log(error);
         }
-
-        if(item.status ==! 'Dispose' || item.status !== 'Donate'){
-          connection.query(
-            "INSERT INTO log (activity, date_done, userID, itemID) VALUES (?,CURDATE(),?,?)",
-            [
-              "An item has been updated.",
-              item.user_id,
-              item.id
-            ],
-            (error, logResult) => {
-              if(error) {
-                console.log(error);
-              }
-            }
-          )
-        }
-        if(item.status === 'Dispose'){
-          connection.query(
-            "INSERT INTO log (activity, date_done, userID, itemID) VALUES (?,CURDATE(),?,?)",
-            [
-              "An item has been tagged for disposal.",
-              item.user_id,
-              item.id
-            ],
-            (error, logResult) => {
-              if(error) {
-                console.log(error);
-              }
-            }
-          )
-        }
-        if(item.status === 'Donate'){
-          connection.query(
-            "INSERT INTO log (activity, date_done, userID, itemID) VALUES (?,CURDATE(),?,?)",
-            [
-              "An item has been tagged for donation.",
-              item.user_id,
-              item.id
-            ],
-            (error, logResult) => {
-              if(error) {
-                console.log(error);
-              }
-            }
-          )
-        }
-        
     })
     
   });
 
 
 
-app.post('/user-update', async function (req, res){
-  const data = req.body;
+// app.post('/user-update', async function (req, res){
+//   const data = req.body;
 
-  connection.query(
-    "UPDATE user SET fname = '" +data.fname+ "', lname = '" +data.lname+ "', contact_no = '" +data.contact_no+ "', authority = '" +data.authority+ "', email = '" +data.email+ "', password = '" +data.password+ "', status = '" +data.status+ "' WHERE id = " +data.id,
-    (error, result) => {
-      if(error){
-        console.log(error);
-      }
-    }
-  )
-})
+//   connection.query(
+//     "UPDATE user SET fname = '" +data.fname+ "', lname = '" +data.lname+ "', contact_no = '" +data.contact_no+ "', authority = '" +data.authority+ "', email = '" +data.email+ "', password = '" +data.password+ "', status = '" +data.status+ "' WHERE id = " +data.id,
+//     (error, result) => {
+//       if(error){
+//         console.log(error);
+//       }
+//     }
+//   )
+// })
 
-app.post('/user-create', (req, res) => {
-  const data = req.body;
+// app.post('/user-create', (req, res) => {
+//   const data = req.body;
 
-  connection.query(
-    "INSERT INTO user (fname, lname, contact_no, date_created, authority, email, password, status) VALUES (?,?,?, CURDATE(),?,?,?,?)",
-    [
-      data.fname,
-      data.lname,
-      data.contact_no,
-      data.authority,
-      data.email,
-      data.password,
-      data.status
-    ],
-    (error, result) => {
-      if (error) {
-        console.log(error);
-      }
-    }
-  );
-});
+//   connection.query(
+//     "INSERT INTO user (fname, lname, contact_no, date_created, authority, email, password, status) VALUES (?,?,?, CURDATE(),?,?,?,?)",
+//     [
+//       data.fname,
+//       data.lname,
+//       data.contact_no,
+//       data.authority,
+//       data.email,
+//       data.password,
+//       data.status
+//     ],
+//     (error, result) => {
+//       if (error) {
+//         console.log(error);
+//       }
+//     }
+//   );
+// });
 
 
   

@@ -68,7 +68,6 @@ function CreateItem() {
       if (!item.serial) newErrors.serial = 'Serial number is required';
       if (!item.location) newErrors.location = 'Location is required';
       if (!item.date_acquired) newErrors.date_acquired = 'Date acquired is required';
-      if (!item.asset_code) newErrors.asset_code = 'Asset code is required';
       return newErrors;
   };
 
@@ -156,12 +155,6 @@ function CreateItem() {
                               <FormLabel>Location</FormLabel>
                               <Input name='location' onChange={handleChange} type="text" />
                               {errors.location && <FormErrorMessage>{errors.location}</FormErrorMessage>}
-                          </FormControl>
-
-                          <FormControl isInvalid={errors.asset_code}>
-                              <FormLabel>Asset Code</FormLabel>
-                              <Input name='asset_code' onChange={handleChange} type="text" />
-                              {errors.asset_code && <FormErrorMessage>{errors.asset_code}</FormErrorMessage>}
                           </FormControl>
 
                           <Button type='submit' id='modalButton' colorScheme='blue' mr={3}>
