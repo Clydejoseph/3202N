@@ -187,7 +187,6 @@ function UpdateItem({ selected }) {
       brand: selected.brand,
       supplier: selected.supplier,
       serial: selected.serial_no,
-      code: selected.asset_code,
       location: selected.location,
       date: selected.date_acquired,
       status: selected.status,
@@ -248,10 +247,6 @@ function UpdateItem({ selected }) {
                   <ModalCloseButton />
                   <ModalBody pb={6}>
                       <form onSubmit={handleSubmit}>
-                          <FormControl isReadOnly>
-                              <FormLabel>Asset Code</FormLabel>
-                              <Input value={item.code} type="text" />
-                          </FormControl>
 
                           <FormControl isInvalid={errors.name}>
                               <FormLabel>Item Name</FormLabel>
@@ -381,7 +376,6 @@ export default function TechAsset(){
                 <Table colorScheme='facebook'  variant='simple' >
                 <Thead>
                     <Tr position={'sticky'} top={0} bgColor={'facebook.400'} zIndex={'1'}>
-                        <Th color={'white'}>Asset Code</Th>
                         <Th color={'white'}>Type</Th>
                         <Th color={'white'}>Brand</Th>
                         <Th color={'white'}>Serial No.</Th>
@@ -394,9 +388,6 @@ export default function TechAsset(){
                     <Tbody>
                       {data.filter((srchVal) =>{
                         if(searchItem === '' ){
-                          return srchVal;
-                        }
-                        else if(srchVal.asset_code.toLowerCase().includes(searchItem.toLowerCase())){
                           return srchVal;
                         }
                         else if(srchVal.type.toLowerCase().includes(searchItem.toLowerCase())){
@@ -420,7 +411,6 @@ export default function TechAsset(){
                       }).map((item , index ) => {
                         return(
                           <Tr key={index}>
-                            <Td>{item.asset_code}</Td>
                             <Td>{item.type}</Td>
                             <Td>{item.brand}</Td>
                             <Td>{item.serial_no}</Td>
