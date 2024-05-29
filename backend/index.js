@@ -11,6 +11,8 @@ app.use(bp.urlencoded({ extended: true }))
 app.use(cors())
 app.use(express.json())
 const secretKey = 'imong_mama';
+const refreshTokenSecret = 'imong_mama_refresh'; // A different secret key for refresh tokens
+const refreshTokens = [];
 
 var connection = mysql.createConnection({
   host     : 'bkuiydztdar7unewbvuk-mysql.services.clever-cloud.com',
@@ -38,7 +40,6 @@ app.post('/login', (req, res) => {
   const email = req.body.email
   const password = req.body.password
   console.log(password)
-  // check if the email and password exist
   const sql = 'SELECT id, fname, lname, email FROM user WHERE status = "active" AND email = ? AND password = ?';
   connection.query(sql, [email, password], (error, results) => {
     if (error) {
@@ -50,15 +51,17 @@ app.post('/login', (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: results[0].id }, secretKey, { expiresIn: '1h' });
+    const accessToken = jwt.sign({ id: results[0].id }, secretKey, { expiresIn: '15m' });
+    const refreshToken = jwt.sign({ id: results[0].id }, refreshTokenSecret, { expiresIn: '7d' });
+    refreshTokens.push(refreshToken);
 
-    // success
     const userData = {
       id: results[0].id,
       email: results[0].email,
       fname: results[0].fname,
       lname: results[0].lname,
-      token: token
+      accessToken: accessToken,
+      refreshToken: refreshToken
     };
 
     console.log(userData)
@@ -66,7 +69,37 @@ app.post('/login', (req, res) => {
   });
 })
 
-app.get('/itemcount' , (req , res) =>{
+app.post('/token', (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.sendStatus(401);
+  if (!refreshTokens.includes(token)) return res.sendStatus(403);
+
+  jwt.verify(token, refreshTokenSecret, (err, user) => {
+    if (err) return res.sendStatus(403);
+    const accessToken = jwt.sign({ id: user.id }, secretKey, { expiresIn: '15m' });
+    res.json({ accessToken });
+  });
+});
+
+app.post('/logout', (req, res) => {
+  const { token } = req.body;
+  refreshTokens = refreshTokens.filter(t => t !== token);
+  res.sendStatus(204);
+});
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, secretKey, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
+
+app.get('/itemcount' , authenticateToken, (req , res) =>{
   const sql = "SELECT c.id , c.name , COUNT(DISTINCT i.id) as count FROM category c LEFT JOIN item i on c.id = i.categoryID  GROUP BY c.id;"
 
   connection.query(sql , (err,result) =>{
@@ -80,7 +113,7 @@ app.get('/itemcount' , (req , res) =>{
 })
 
 
-app.get('/newequipment' , (err ,res) =>{
+app.get('/newequipment' , authenticateToken, (err ,res) =>{
   const sql = 'SELECT i.asset_code ,i.name , i.serial_no , i.location, i.brand, c.name FROM item i, category c WHERE i. status = "New" AND i.categoryID = c.id;';
 
   connection.query(sql ,(err, result) =>{
@@ -94,7 +127,7 @@ app.get('/newequipment' , (err ,res) =>{
 
 })
 
-app.get('/actives' , (err ,res) =>{
+app.get('/actives' , authenticateToken, (err ,res) =>{
   const sql = 'SELECT COUNT(*) as count FROM item WHERE status = "Active";';
 
   connection.query(sql ,(err, result) =>{
@@ -106,7 +139,7 @@ app.get('/actives' , (err ,res) =>{
   })
 
 })
-app.get('/defective' , (err ,res) =>{
+app.get('/defective' , authenticateToken, (err ,res) =>{
   const sql = 'SELECT COUNT(*) as count FROM item WHERE status = "Defective";';
 
   connection.query(sql ,(err, result) =>{
@@ -119,7 +152,7 @@ app.get('/defective' , (err ,res) =>{
   })
 
 })
-app.get('/dispose' , (err ,res) =>{
+app.get('/dispose' , authenticateToken, (err ,res) =>{
   const sql = 'SELECT COUNT(*) as count FROM item WHERE status = "Dispose";';
 
   connection.query(sql ,(err, result) =>{
@@ -132,7 +165,7 @@ app.get('/dispose' , (err ,res) =>{
   })
 
 })
-app.get('/donate' , (err ,res) =>{
+app.get('/donate' , authenticateToken, (err ,res) =>{
   const sql = 'SELECT COUNT(*) as count FROM item WHERE status = "Donate";';
 // app.get('/barChartData' , (req , res) =>{
 //   const sql = "SELECT COUNT(*) AS item_count, MONTH(i.date_acquired) AS month_number, c.name AS item_name FROM item i, category c WHERE i.categoryID = c.id GROUP BY categoryID;"
@@ -156,7 +189,7 @@ app.get('/donate' , (err ,res) =>{
 })
 
 
-app.get('/asset', async function (req, res) {
+app.get('/asset', authenticateToken, async function (req, res) {
     // req.body
    
     connection.query('SELECT i.*, c.name AS type FROM `item` i, `category` c WHERE i.categoryID = c.id ORDER BY date_acquired DESC ;', function (error, results, fields) {
@@ -196,8 +229,6 @@ app.post('/asset-create', (req, res) => {
             }
 
             const newAssetCode = results[0].asset_code;
-            const newItemID = results[0].ID;
-            const dateToday = results[0].current_date;
   
             connection.query(
               "UPDATE item SET asset_code = ? WHERE id = ?",
@@ -206,21 +237,6 @@ app.post('/asset-create', (req, res) => {
                 if (error) {
                   console.log(error);
                 }
-
-                connection.query(
-                  "INSERT INTO log (activity, date_done, userID, itemID) VALUES (?,?,?,?)",
-                  [
-                    'An item has been added to the inventory.',
-                    dateToday,
-                    item.user_id,
-                    newItemID
-                  ],
-                  (error, logResult) => {
-                    if(error) {
-                      console.log(error);
-                    }
-                  }
-                )
                 // return res.json({ item });
               }
             );
@@ -240,93 +256,46 @@ app.post('/asset-update', (req, res) => {
         if(error){
           console.log(error);
         }
-
-        if(item.status ==! 'Dispose' || item.status !== 'Donate'){
-          connection.query(
-            "INSERT INTO log (activity, date_done, userID, itemID) VALUES (?,CURDATE(),?,?)",
-            [
-              "An item has been updated.",
-              item.user_id,
-              item.id
-            ],
-            (error, logResult) => {
-              if(error) {
-                console.log(error);
-              }
-            }
-          )
-        }
-        if(item.status === 'Dispose'){
-          connection.query(
-            "INSERT INTO log (activity, date_done, userID, itemID) VALUES (?,CURDATE(),?,?)",
-            [
-              "An item has been tagged for disposal.",
-              item.user_id,
-              item.id
-            ],
-            (error, logResult) => {
-              if(error) {
-                console.log(error);
-              }
-            }
-          )
-        }
-        if(item.status === 'Donate'){
-          connection.query(
-            "INSERT INTO log (activity, date_done, userID, itemID) VALUES (?,CURDATE(),?,?)",
-            [
-              "An item has been tagged for donation.",
-              item.user_id,
-              item.id
-            ],
-            (error, logResult) => {
-              if(error) {
-                console.log(error);
-              }
-            }
-          )
-        }
-        
     })
     
   });
 
 
 
-app.post('/user-update', async function (req, res){
-  const data = req.body;
+// app.post('/user-update', async function (req, res){
+//   const data = req.body;
 
-  connection.query(
-    "UPDATE user SET fname = '" +data.fname+ "', lname = '" +data.lname+ "', contact_no = '" +data.contact_no+ "', authority = '" +data.authority+ "', email = '" +data.email+ "', password = '" +data.password+ "', status = '" +data.status+ "' WHERE id = " +data.id,
-    (error, result) => {
-      if(error){
-        console.log(error);
-      }
-    }
-  )
-})
+//   connection.query(
+//     "UPDATE user SET fname = '" +data.fname+ "', lname = '" +data.lname+ "', contact_no = '" +data.contact_no+ "', authority = '" +data.authority+ "', email = '" +data.email+ "', password = '" +data.password+ "', status = '" +data.status+ "' WHERE id = " +data.id,
+//     (error, result) => {
+//       if(error){
+//         console.log(error);
+//       }
+//     }
+//   )
+// })
 
-app.post('/user-create', (req, res) => {
-  const data = req.body;
+// app.post('/user-create', (req, res) => {
+//   const data = req.body;
 
-  connection.query(
-    "INSERT INTO user (fname, lname, contact_no, date_created, authority, email, password, status) VALUES (?,?,?, CURDATE(),?,?,?,?)",
-    [
-      data.fname,
-      data.lname,
-      data.contact_no,
-      data.authority,
-      data.email,
-      data.password,
-      data.status
-    ],
-    (error, result) => {
-      if (error) {
-        console.log(error);
-      }
-    }
-  );
-});
+//   connection.query(
+//     "INSERT INTO user (fname, lname, contact_no, date_created, authority, email, password, status) VALUES (?,?,?, CURDATE(),?,?,?,?)",
+//     [
+//       data.fname,
+//       data.lname,
+//       data.contact_no,
+//       data.authority,
+//       data.email,
+//       data.password,
+//       data.status
+//     ],
+//     (error, result) => {
+//       if (error) {
+//         console.log(error);
+//       }
+//     }
+//   );
+// });
 
 
   

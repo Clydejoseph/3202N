@@ -18,7 +18,7 @@ function Dashboard() {
     const [item, setItem] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/itemcount').then((res) => {
+        axios.get(`${config.API}/itemcount`).then((res) => {
             setItem(res.data);
         }).catch((error) => {
             console.log(error);
@@ -75,6 +75,14 @@ function Dashboard() {
 
     const navigate = useNavigate();
 
+    const handleLogout = async () => {
+        const refreshToken = localStorage.getItem('refreshToken');
+        await axios.post(`${config.API}/logout`, { token: refreshToken });
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        navigate('/');
+    };
+
     const ButtonAsset = () => {
         navigate('/asset');
     };
@@ -103,6 +111,7 @@ function Dashboard() {
                 </HStack>
             </VStack>
             <Button onClick={ButtonAsset}>Tech Asset</Button>
+            <Button onClick={handleLogout}>Logout</Button>
         </>
     );
 }

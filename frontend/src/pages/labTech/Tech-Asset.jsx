@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import {useNavigate} from 'react-router-dom'
+import config from '../../config';
 import {
     Table,
     Thead,
@@ -67,7 +68,6 @@ function CreateItem() {
       if (!item.serial) newErrors.serial = 'Serial number is required';
       if (!item.location) newErrors.location = 'Location is required';
       if (!item.date_acquired) newErrors.date_acquired = 'Date acquired is required';
-      if (!item.asset_code) newErrors.asset_code = 'Asset code is required';
       return newErrors;
   };
 
@@ -82,7 +82,7 @@ function CreateItem() {
           setErrors(newErrors);
       } else {
           const data = item;
-          axios.post('http://localhost:5000/asset-create', data)
+          axios.post(`${config.API}/asset-create`, data)
               .then(function (response) {
                   console.log(response);
               })
@@ -157,12 +157,6 @@ function CreateItem() {
                               {errors.location && <FormErrorMessage>{errors.location}</FormErrorMessage>}
                           </FormControl>
 
-                          <FormControl isInvalid={errors.asset_code}>
-                              <FormLabel>Asset Code</FormLabel>
-                              <Input name='asset_code' onChange={handleChange} type="text" />
-                              {errors.asset_code && <FormErrorMessage>{errors.asset_code}</FormErrorMessage>}
-                          </FormControl>
-
                           <Button type='submit' id='modalButton' colorScheme='blue' mr={3}>
                               Add
                           </Button>
@@ -232,7 +226,7 @@ function UpdateItem({ selected }) {
           setErrors(newErrors);
       } else {
           const data = item;
-          axios.post('http://localhost:5000/asset-update', data)
+          axios.post(`${config.API}/asset-update`, data)
               .then(function (response) {
                   console.log(response);
               })
@@ -338,25 +332,25 @@ function UpdateItem({ selected }) {
 
 export default function TechAsset(){
 
-  const linkTo = useNavigate();
+    const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [searchItem ,setSearchItem] = useState('');
 
   useEffect(() => {
-    // const userData = JSON.parse(sessionStorage.getItem('account'));
-    // if (!userData) {
-    //   linkTo('/login');
-    // } else {
-      // Fetch data from the SQL database
-      axios.get('http://localhost:5000/asset/')
-        .then(response => {
-          setData(response.data);
-          // console.log(response.data);
-        })
-        .catch(error => {
-          console.error(error);
-        });
-  }, [linkTo]);
+    const fetchAssets = async () => {
+      try {
+        const response = await axios.get(`${config.API}/asset`);
+        setData(response.data);
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          navigate('/');
+        }
+      }
+    };
+
+    fetchAssets();
+  }, [navigate]);
 
 
 
