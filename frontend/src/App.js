@@ -1,14 +1,11 @@
-import {Route, Routes} from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import TechHome from './pages/labTech/Tech-Home';
 import TechAsset from './pages/labTech/Tech-Asset';
-import {useState, useEffect, React} from "react";
+import { useState, useEffect, React } from "react";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
 import config from "./config";
 
-
 function App() {
-
   const navigate = useNavigate();
 
   const Login = () => {
@@ -18,13 +15,12 @@ function App() {
     const handleLogin = async () => {
       try {
         const response = await axios.post(`${config.API}/login`, { email, password });
-        console.log(response)
-        const { token } = response.data;
-        localStorage.setItem('token', token); // Store token in local storage
-        navigate('/dashboard'); // Redirect to dashboard upon successful login
+        const { accessToken, refreshToken } = response.data;
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        navigate('/dashboard');
       } catch (error) {
         console.error('Login error:', error);
-        // Handle login error (e.g., display error message)
       }
     };
 
@@ -37,42 +33,41 @@ function App() {
     );
   };
 
-  // const Users = () => {
-  //   const [users, setUsers] = useState([]);
+  useEffect(() => {
+    axios.interceptors.request.use(async (config) => {
+      let token = localStorage.getItem('accessToken');
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+      return config;
+    }, (error) => {
+      return Promise.reject(error);
+    });
 
-  //   const fetchUsers = async () => {
-  //     try {
-  //       const token = localStorage.getItem('token'); // Retrieve token from local storage
-  //       const response = await axios.get('http://localhost:5000/users', { headers: { Authorization: token } });
-  //       setUsers(response.data);
-  //     } catch (error) {
-  //       console.error('Fetch users error:', error);
-  //       // Handle fetch users error (e.g., redirect to login page)
-  //     }
-  //   };
+    axios.interceptors.response.use((response) => {
+      return response;
+    }, async (error) => {
+      const originalRequest = error.config;
+      if (error.response.status === 403 && !originalRequest._retry) {
+        originalRequest._retry = true;
+        const refreshToken = localStorage.getItem('refreshToken');
+        const response = await axios.post(`${config.API}/token`, { token: refreshToken });
+        if (response.status === 200) {
+          localStorage.setItem('accessToken', response.data.accessToken);
+          axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
+          return axios(originalRequest);
+        }
+      }
+      return Promise.reject(error);
+    });
+  }, []);
 
-  //   useEffect(() => {
-  //     fetchUsers();
-  //   }, []);
-
-  //   return (
-  //     <div>
-  //       <h2>Users</h2>
-  //       <ul>
-  //         {users.map(user => (
-  //           <li key={user.id}>{user.name}</li>
-  //         ))}
-  //       </ul>
-  //     </div>
-  //   );
-  // };
-
-  return(
+  return (
     <>
       <Routes>
-        <Route path="/dashboard" element={<TechHome />} /> {/* Define the dashboard route */}
+        <Route path="/dashboard" element={<TechHome />} />
         <Route path="/asset" element={<TechAsset />} />
-        <Route path="/" element={<Login />} /> {/* Define the login route */}
+        <Route path="/" element={<Login />} />
       </Routes>
     </>
   );
@@ -80,7 +75,6 @@ function App() {
 
 export default App;
 
-const errorRouteHandling = () =>{
+const errorRouteHandling = () => {
   return (<h1>404 ERROR Routing APP</h1>)
 }
-
