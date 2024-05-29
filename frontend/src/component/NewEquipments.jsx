@@ -20,7 +20,6 @@ function NewEquipment({data}) {
 
                 <Thead>
                 <Tr>
-                    <Th>Asset Code</Th>
                     <Th>Item</Th>
                     <Th>Brand</Th>
                     <Th>Serial No.</Th>
@@ -31,7 +30,6 @@ function NewEquipment({data}) {
                   {data.length == 0 ? equipUndefined(): data.map((elem ,indx) =>{
                     return(
                       <Tr key={indx} textAlign={'center'}>
-                      <Td>{elem.asset_code}</Td>
                       <Td>{elem.name}</Td>
                       <Td>{elem.brand}</Td>
                       <Td>{elem.serial_no}</Td>

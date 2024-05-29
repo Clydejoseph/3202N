@@ -226,28 +226,6 @@ app.post('/asset-create', authenticateToken, (req, res) => {
         if (error) {
           console.log(error);
         }
-  
-        connection.query(
-          "SELECT CURRENT_DATE() AS 'current_date', i.id AS 'ID', CONCAT(c.category_code, '-', RIGHT(DATE_FORMAT(i.date_acquired, '%Y'),2), '-', LPAD(i.id, 3, '0')) AS asset_code FROM item i, category c WHERE i.categoryID = c.id ORDER BY i.id DESC LIMIT 1",
-          (error, results) => {
-            if(error){
-              console.log(error);
-            }
-
-            const newAssetCode = results[0].asset_code;
-  
-            connection.query(
-              "UPDATE item SET asset_code = ? WHERE id = ?",
-              [newAssetCode, result.insertId],
-              (error, updateResult) => {
-                if (error) {
-                  console.log(error);
-                }
-                // return res.json({ item });
-              }
-            );
-          }
-        );
       }
     );
 });
