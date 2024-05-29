@@ -27,7 +27,7 @@ connection.connect((err) => {
   console.log('Connected to the database as id ' + connection.threadId);
 });
 
-app.use('/', (req, res) => {
+app.get('/', (req, res) => {
   res.json({
     status: 200,
     connection: 'working fine'
