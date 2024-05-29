@@ -119,10 +119,10 @@ function CreateItem() {
                           <FormControl isInvalid={errors.type}>
                               <FormLabel>Item Type</FormLabel>
                               <Select name='type' placeholder='select category' onChange={handleChange}>
-                                  <option value="Mouse">Mouse</option>
-                                  <option value="Keyboard">Keyboard</option>
-                                  <option value="Monitor">Monitor</option>
-                                  <option value="Tool">Tool</option>
+                                  <option value="1">Mouse</option>
+                                  <option value="2">Keyboard</option>
+                                  <option value="3">Monitor</option>
+                                  <option value="4">Tool</option>
                               </Select>
                               {errors.type && <FormErrorMessage>{errors.type}</FormErrorMessage>}
                           </FormControl>
