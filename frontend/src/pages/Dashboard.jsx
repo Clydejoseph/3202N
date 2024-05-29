@@ -106,6 +106,10 @@ function Dashboard() {
 
     return (
         <>
+            <div className="container">
+            <Button className="button" onClick={ButtonAsset}>Tech Asset</Button>
+            <Button className="button" onClick={handleLogout}>Logout</Button>
+            </div>
             <VStack align={'center'} padding={'0.5rem'}>
                 <HStack flexWrap={'wrap'} width={'80%'} justify={'center'}>
                     {dash}
@@ -121,8 +125,7 @@ function Dashboard() {
                     </VStack>
                 </HStack>
             </VStack>
-            <Button onClick={ButtonAsset}>Tech Asset</Button>
-            <Button onClick={handleLogout}>Logout</Button>
+ 
         </>
     );
 }
