@@ -205,7 +205,7 @@ app.get('/asset', authenticateToken, async function (req, res) {
     });   
 })
 
-app.post('/asset-create', (req, res) => {
+app.post('/asset-create', authenticateToken, (req, res) => {
     const item = req.body;
   
     connection.query(
@@ -252,7 +252,7 @@ app.post('/asset-create', (req, res) => {
     );
 });
 
-app.post('/asset-update', (req, res) => {
+app.post('/asset-update', authenticateToken, (req, res) => {
     res.json({ message: 'Data received successfully' });
   
     const item = req.body;
@@ -266,42 +266,6 @@ app.post('/asset-update', (req, res) => {
     
   });
 
-
-
-// app.post('/user-update', async function (req, res){
-//   const data = req.body;
-
-//   connection.query(
-//     "UPDATE user SET fname = '" +data.fname+ "', lname = '" +data.lname+ "', contact_no = '" +data.contact_no+ "', authority = '" +data.authority+ "', email = '" +data.email+ "', password = '" +data.password+ "', status = '" +data.status+ "' WHERE id = " +data.id,
-//     (error, result) => {
-//       if(error){
-//         console.log(error);
-//       }
-//     }
-//   )
-// })
-
-// app.post('/user-create', (req, res) => {
-//   const data = req.body;
-
-//   connection.query(
-//     "INSERT INTO user (fname, lname, contact_no, date_created, authority, email, password, status) VALUES (?,?,?, CURDATE(),?,?,?,?)",
-//     [
-//       data.fname,
-//       data.lname,
-//       data.contact_no,
-//       data.authority,
-//       data.email,
-//       data.password,
-//       data.status
-//     ],
-//     (error, result) => {
-//       if (error) {
-//         console.log(error);
-//       }
-//     }
-//   );
-// });
 
 
   
