@@ -209,7 +209,7 @@ app.post('/asset-create', authenticateToken, (req, res) => {
     const item = req.body;
   
     connection.query(
-      "INSERT INTO item (name, description, brand, date_acquired, supplier, serial_no, asset_code, location, status, categoryID) VALUES (?,?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO item (name, description, brand, date_acquired, supplier, serial_no, asset_code, location, status, categoryID, recipient) VALUES (?,?,?,?,?,?,?,?,?,?)",
       [
         item.name,
         item.description,
@@ -221,6 +221,7 @@ app.post('/asset-create', authenticateToken, (req, res) => {
         item.location,
         item.status,
         item.type,
+        item.recipient
       ],
       (error, result) => {
         if (error) {

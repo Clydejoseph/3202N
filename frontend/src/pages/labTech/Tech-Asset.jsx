@@ -54,6 +54,7 @@ function CreateItem() {
       date_acquired: '',
       status: 'Active',
       asset_code: '',
+      recipient: 'NA'
   });
 
   const [errors, setErrors] = useState({});
