@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import PieChart from '../../../src/component/charts/PieChart.jsx'; // Replace with your component path
+import PieChart from '../../src/component/charts/PieChart.jsx'; // Replace with your component path
 
 describe('PieChart component', () => {
   it('renders the pie chart with provided data', () => {
@@ -27,7 +27,6 @@ describe('PieChart component', () => {
   
     const { getByText } = render(<PieChart {...mockData} />);
   
-    
     const activeLabel = getByText((content, element) => content.includes('Active') && element.classList.contains('my-label-class'));
   
     expect(activeLabel).toBeInTheDocument();
