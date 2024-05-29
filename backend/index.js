@@ -82,9 +82,15 @@ app.post('/token', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  const { token } = req.body;
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.sendStatus(401); // Unauthorized
+  }
+  
   refreshTokens = refreshTokens.filter(t => t !== token);
-  res.sendStatus(204);
+  res.sendStatus(204); // No Content
 });
 
 const authenticateToken = (req, res, next) => {

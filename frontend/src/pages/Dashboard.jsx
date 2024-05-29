@@ -77,10 +77,21 @@ function Dashboard() {
 
     const handleLogout = async () => {
         const refreshToken = localStorage.getItem('refreshToken');
-        await axios.post(`${config.API}/logout`, { token: refreshToken });
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        navigate('/');
+        
+        try {
+            await axios.post(`${config.API}/logout`, null, {
+                headers: {
+                    Authorization: `Bearer ${refreshToken}`
+                }
+            });
+            
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            navigate('/');
+        } catch (error) {
+            // Handle error
+            console.error('Error logging out:', error);
+        }
     };
 
     const ButtonAsset = () => {
