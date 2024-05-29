@@ -1,35 +1,61 @@
-import { render, fireEvent, waitFor } from '@testing-library/react';
-import { expect, test, vi } from '@vitest/vitest';
-import { BrowserRouter as Router } from 'react-router-dom';
+import React from 'react';
+import { render, fireEvent, screen } from '@testing-library/react';
+import '@testing-library/jest-dom'; 
+import axios from 'axios';
 import App from '../../src/App'; 
 
-test('login allows input and redirects on success', async () => {
+jest.mock('axios');
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => jest.fn(),
+}));
 
-  const mockNavigate = vi.fn();
-
+describe('Login Component within App', () => {
+  it('renders correctly', () => {
+    render(<App />);
  
-  vi.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
-    useNavigate: () => mockNavigate,
-  }));
+    expect(screen.getByPlaceholderText('Email')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
+    expect(screen.getByText('Login')).toBeInTheDocument();
+  });
 
-  
-  const { getByPlaceholderText, getByRole } = render(
-    <Router>
-      <App />
-    </Router>
-  );
-  
-  const emailInput = getByPlaceholderText('Email');
-  const passwordInput = getByPlaceholderText('Password');
-  const loginButton = getByRole('button', { name: 'Login' });
+  it('calls handleLogin on login button click with correct inputs', async () => {
+    const mockedResponse = { data: { accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' } };
 
-  fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-  fireEvent.change(passwordInput, { target: { value: 'password123' } });
-  
-  fireEvent.click(loginButton);
+    axios.post.mockResolvedValue(mockedResponse);
 
-  await waitFor(() => {
-    expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    render(<App />);
+
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'test@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
+
+    fireEvent.click(screen.getByText('Login'));
+
+    expect(axios.post).toHaveBeenCalledWith(`${config.API}/login`, {
+      email: 'test@example.com',
+      password: 'password123',
+    });
+
+    // Wait for async actions to complete
+    await screen.findByText('Login');
+
+    expect(localStorage.getItem('accessToken')).toBe('fakeAccessToken');
+    expect(localStorage.getItem('refreshToken')).toBe('fakeRefreshToken');
+  });
+
+  it('handles login error', async () => {
+    axios.post.mockRejectedValue(new Error('Login error'));
+
+    render(<App />);
+
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'wrong@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'wrongpassword' } });
+
+    fireEvent.click(screen.getByText('Login'));
+
+    // Wait for async actions to complete
+    await screen.findByText('Login');
+
+    expect(console.error).toHaveBeenCalledWith('Login error:', expect.any(Error));
   });
 });
