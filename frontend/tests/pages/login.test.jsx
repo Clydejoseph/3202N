@@ -1,38 +1,35 @@
-import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom'; // Import BrowserRouter for testing with routing
+import { render, fireEvent, waitFor } from '@testing-library/react';
+import { expect, test, vi } from '@vitest/vitest';
+import { BrowserRouter as Router } from 'react-router-dom';
+import App from '../../src/App'; 
 
-// Import your App component
-import App from '../../src/App.jsx'; 
+test('login allows input and redirects on success', async () => {
 
-// Mock (optional) - comment out if using browser navigation during testing
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
-}));
+  const mockNavigate = vi.fn();
 
-test('user can input email and password, and login redirects to dashboard', async () => {
-  // Render the App component with mocked useNavigate (optional)
-  const mockNavigate = jest.fn(); // For testing redirection without actual navigation
-  const { getByLabelText, getByRole } = render(
-    <BrowserRouter>
-      <App navigate={mockNavigate} />
-    </BrowserRouter>
+ 
+  vi.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: () => mockNavigate,
+  }));
+
+  
+  const { getByPlaceholderText, getByRole } = render(
+    <Router>
+      <App />
+    </Router>
   );
-
-  // Find email and password input fields and button
-  const emailInput = getByLabelText('Email');
-  const passwordInput = getByLabelText('Password');
+  
+  const emailInput = getByPlaceholderText('Email');
+  const passwordInput = getByPlaceholderText('Password');
   const loginButton = getByRole('button', { name: 'Login' });
 
-  // Simulate user input for email and password
   fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
   fireEvent.change(passwordInput, { target: { value: 'password123' } });
-
-  // Simulate clicking the login button
+  
   fireEvent.click(loginButton);
 
-  // Assert successful redirection (replace with expected redirect path if different)
-  expect(mockNavigate).toHaveBeenCalledWith('/dashboard'); // Using mocked navigate
-
+  await waitFor(() => {
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+  });
 });

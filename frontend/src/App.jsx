@@ -37,35 +37,6 @@ function App() {
     );
   };
 
-  // const Users = () => {
-  //   const [users, setUsers] = useState([]);
-
-  //   const fetchUsers = async () => {
-  //     try {
-  //       const token = localStorage.getItem('token'); // Retrieve token from local storage
-  //       const response = await axios.get('http://localhost:5000/users', { headers: { Authorization: token } });
-  //       setUsers(response.data);
-  //     } catch (error) {
-  //       console.error('Fetch users error:', error);
-  //       // Handle fetch users error (e.g., redirect to login page)
-  //     }
-  //   };
-
-  //   useEffect(() => {
-  //     fetchUsers();
-  //   }, []);
-
-  //   return (
-  //     <div>
-  //       <h2>Users</h2>
-  //       <ul>
-  //         {users.map(user => (
-  //           <li key={user.id}>{user.name}</li>
-  //         ))}
-  //       </ul>
-  //     </div>
-  //   );
-  // };
 
   return(
     <>
