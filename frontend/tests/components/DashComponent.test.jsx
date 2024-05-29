@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import DashComponent from '../../src/component/DashComponent.jsx'; 
+import DashComponent from '../../src/component/DashComponent.jsx'; // Assuming the correct path
 
 const mockEquipments = [
   { title: 'System Unit', count: 20 },
@@ -11,13 +11,13 @@ const mockEquipments = [
 
 describe('DashComponent', () => {
   test('renders the component with equipment cards', () => {
-    render(<DashComponent equipments={mockEquipments} />); //mock data
+    render(<DashComponent equipments={mockEquipments} />); // Pass data as a prop
 
+    // Use screen queries to assert expected elements (targeting nested Text)
+    const equipmentTitles = screen.getAllByRole('heading').map(el => el.textContent); // Get text content of headings
+    expect(equipmentTitles).toHaveLength(5); // 5 equipment titles
 
-    const equipmentTitles = screen.getAllByRole('heading').map(el => el.textContent); 
-    expect(equipmentTitles).toHaveLength(5); 
-
-
-    expect(screen.getByText(/system unit/i)).toBeInTheDocument(); 
+    // Optionally, test specific equipment titles
+    expect(screen.getByText(/system unit/i)).toBeInTheDocument(); // Example for specific title
   });
 });
