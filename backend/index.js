@@ -27,34 +27,12 @@ connection.connect((err) => {
   console.log('Connected to the database as id ' + connection.threadId);
 });
 
-// const verifyToken = (req, res, next) => {
-//   const token = req.headers['authorization'];
-//   if (!token) {
-//       return res.status(403).send({ auth: false, message: 'No token provided.' });
-//   }
-
-//   jwt.verify(token, secretKey, (err, decoded) => {
-//       if (err) {
-//           return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
-//       }
-
-//       req.userId = decoded.id;
-//       next();
-//   });
-// };
-
-// app.get('/users', verifyToken, (req, res) => {
-//   connection.query(
-//     "SELECT *, CONCAT(fname, ' ', lname) AS name FROM user WHERE status = 'Active'",
-//     (error, result) => {
-//       if(error){
-//         console.log(error);
-//       }
-//       console.log(results)
-//       res.json(result);
-//   });
-// })
-
+app.use('/', (req, res) => {
+  res.json({
+    status: 200,
+    connection: 'working fine'
+  })
+})
 
 app.post('/login', (req, res) => {
   const email = req.body.email
@@ -354,4 +332,4 @@ app.post('/user-create', (req, res) => {
   
 
 
-  app.listen(5000)
+  app.listen(process.env.PORT || 5000)

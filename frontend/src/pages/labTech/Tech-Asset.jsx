@@ -36,313 +36,304 @@ import '../../css/table-asset.css'
 
 
 function CreateItem() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
-    const userData = JSON.parse(sessionStorage.getItem('account'));
+  const initialRef = React.useRef(null)
+  const finalRef = React.useRef(null)
 
-    const { isOpen, onOpen, onClose } = useDisclosure()
-  
-    const initialRef = React.useRef(null)
-    const finalRef = React.useRef(null)
 
-    const [item, setItem] = useState({
-        name: '',
-        description: '',
-        type: '',
-        brand: '',
-        supplier: '',
-        serial: '',
-        location: '',
-        date_acquired: '',
-        status: 'Active',
-        asset_code: '',
-        user_id: userData.id
-      });
+  const [item, setItem] = useState({
+      name: '',
+      description: '',
+      type: '',
+      brand: '',
+      supplier: '',
+      serial: '',
+      location: '',
+      date_acquired: '',
+      status: 'Active',
+      asset_code: '',
+  });
 
-    const handleChange = (e) => {
-        setItem({ ...item, [e.target.name]: e.target.value });
-    };
+  const [errors, setErrors] = useState({});
 
-    const HandleSubmit = (e) => {
-      const data = item;
-      axios.post('http://localhost:5000/asset-create', data)
-      .then(function (response) {
-        console.log(response);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+  const validate = () => {
+      const newErrors = {};
+      if (!item.name) newErrors.name = 'Item name is required';
+      if (!item.description) newErrors.description = 'Description is required';
+      if (!item.type) newErrors.type = 'Type is required';
+      if (!item.brand) newErrors.brand = 'Brand is required';
+      if (!item.supplier) newErrors.supplier = 'Supplier is required';
+      if (!item.serial) newErrors.serial = 'Serial number is required';
+      if (!item.location) newErrors.location = 'Location is required';
+      if (!item.date_acquired) newErrors.date_acquired = 'Date acquired is required';
+      if (!item.asset_code) newErrors.asset_code = 'Asset code is required';
+      return newErrors;
+  };
 
-      onClose();
-    }
-  
-    return (
+  const handleChange = (e) => {
+      setItem({ ...item, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+      e.preventDefault();
+      const newErrors = validate();
+      if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+      } else {
+          const data = item;
+          axios.post('http://localhost:5000/asset-create', data)
+              .then(function (response) {
+                  console.log(response);
+              })
+              .catch(function (error) {
+                  console.log(error);
+              });
+          onClose();
+      }
+  };
+
+  return (
       <>
-        <Button onClick={onOpen} colorScheme={'facebook'}>New Item</Button>
-  
-        <Modal
-          initialFocusRef={initialRef}
-          finalFocusRef={finalRef}
-          isOpen={isOpen}
-          onClose={onClose}
-        >
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Add New Item</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody pb={6}>
+          <Button onClick={onOpen} colorScheme={'facebook'}>New Item</Button>
 
-          <form onSubmit={HandleSubmit}>
+          <Modal initialFocusRef={initialRef} finalFocusRef={finalRef} isOpen={isOpen} onClose={onClose}>
+              <ModalOverlay />
+              <ModalContent>
+                  <ModalHeader>Add New Item</ModalHeader>
+                  <ModalCloseButton />
+                  <ModalBody pb={6}>
+                      <form onSubmit={handleSubmit}>
+                          <FormControl isInvalid={errors.name}>
+                              <FormLabel>Item Name</FormLabel>
+                              <Input name='name' onChange={handleChange} type="text" />
+                              {errors.name && <FormErrorMessage>{errors.name}</FormErrorMessage>}
+                          </FormControl>
 
-            <FormControl>
-                <FormLabel>Item Name</FormLabel>
-                <Input  name='name'
-                        onChange={handleChange}
-                        type="text" />
-            </FormControl>
-  
-            <FormControl>
-                <FormLabel>Item Description</FormLabel>
-                <Input  name='description'
-                        onChange={handleChange}
-                        type="text" />
-            </FormControl>
+                          <FormControl isInvalid={errors.description}>
+                              <FormLabel>Item Description</FormLabel>
+                              <Input name='description' onChange={handleChange} type="text" />
+                              {errors.description && <FormErrorMessage>{errors.description}</FormErrorMessage>}
+                          </FormControl>
 
-            <FormControl>
-                <FormLabel>Item Type</FormLabel>
-                <Select name='type' placeholder='select category' onChange={handleChange}>
-                    <option value="1">Mouse</option>
-                    <option value="2">Keyboard</option>
-                    <option value="3">Monitor</option>
-                    <option value="4">Tool</option>
-                </Select>
-            </FormControl>
+                          <FormControl isInvalid={errors.type}>
+                              <FormLabel>Item Type</FormLabel>
+                              <Select name='type' placeholder='select category' onChange={handleChange}>
+                                  <option value="Mouse">Mouse</option>
+                                  <option value="Keyboard">Keyboard</option>
+                                  <option value="Monitor">Monitor</option>
+                                  <option value="Tool">Tool</option>
+                              </Select>
+                              {errors.type && <FormErrorMessage>{errors.type}</FormErrorMessage>}
+                          </FormControl>
 
-            <FormControl>
-                <FormLabel>Brand Name</FormLabel>
-                <Input  name='brand'
-                        onChange={handleChange}
-                        type="text" />
-            </FormControl>
+                          <FormControl isInvalid={errors.brand}>
+                              <FormLabel>Brand Name</FormLabel>
+                              <Input name='brand' onChange={handleChange} type="text" />
+                              {errors.brand && <FormErrorMessage>{errors.brand}</FormErrorMessage>}
+                          </FormControl>
 
-            <FormControl>
-                <FormLabel>Supplier Name</FormLabel>
-                <Input  name='supplier'
-                        onChange={handleChange}
-                        type="text" />
-            </FormControl>
+                          <FormControl isInvalid={errors.supplier}>
+                              <FormLabel>Supplier Name</FormLabel>
+                              <Input name='supplier' onChange={handleChange} type="text" />
+                              {errors.supplier && <FormErrorMessage>{errors.supplier}</FormErrorMessage>}
+                          </FormControl>
 
-            <FormControl>
-                <FormLabel>Serial Number</FormLabel>
-                <Input  name='serial'
-                        onChange={handleChange}
-                        type="text" />
-            </FormControl>
+                          <FormControl isInvalid={errors.serial}>
+                              <FormLabel>Serial Number</FormLabel>
+                              <Input name='serial' onChange={handleChange} type="text" />
+                              {errors.serial && <FormErrorMessage>{errors.serial}</FormErrorMessage>}
+                          </FormControl>
 
-            <FormControl>
-                <FormLabel>Date Acquired</FormLabel>
-                <Input  name='date_acquired'
-                        onChange={handleChange}
-                        size="md"
-                        type="date" />
-            </FormControl>
+                          <FormControl isInvalid={errors.date_acquired}>
+                              <FormLabel>Date Acquired</FormLabel>
+                              <Input name='date_acquired' onChange={handleChange} size="md" type="date" />
+                              {errors.date_acquired && <FormErrorMessage>{errors.date_acquired}</FormErrorMessage>}
+                          </FormControl>
 
-            <FormControl isRequired>
-                <FormLabel>Location</FormLabel>
-                <Input  name='location'
-                        onChange={handleChange}
-                        type="text" />
-            </FormControl>
+                          <FormControl isInvalid={errors.location}>
+                              <FormLabel>Location</FormLabel>
+                              <Input name='location' onChange={handleChange} type="text" />
+                              {errors.location && <FormErrorMessage>{errors.location}</FormErrorMessage>}
+                          </FormControl>
 
-            <Button type='submit' id='modalButton' colorScheme='blue' mr={3}>
-                Add
-            </Button>
-            <Button id='modalButton' onClick={onClose}>Cancel</Button>
+                          <FormControl isInvalid={errors.asset_code}>
+                              <FormLabel>Asset Code</FormLabel>
+                              <Input name='asset_code' onChange={handleChange} type="text" />
+                              {errors.asset_code && <FormErrorMessage>{errors.asset_code}</FormErrorMessage>}
+                          </FormControl>
 
-          </form>
-
-            </ModalBody>
-
-          </ModalContent>
-        </Modal>
+                          <Button type='submit' id='modalButton' colorScheme='blue' mr={3}>
+                              Add
+                          </Button>
+                          <Button id='modalButton' onClick={onClose}>Cancel</Button>
+                      </form>
+                  </ModalBody>
+              </ModalContent>
+          </Modal>
       </>
-    )
-  }
+  );
+}
 
 
 // --------------------------------------------------------------------------------------------------------
 
 
 
-function UpdateItem({selected}) {
-
-    const userData = JSON.parse(sessionStorage.getItem('account'));
-
-    const { isOpen, onOpen, onClose } = useDisclosure()
+function UpdateItem({ selected }) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const initialRef = React.useRef(null)
+  const finalRef = React.useRef(null)
   
-    const initialRef = React.useRef(null)
-    const finalRef = React.useRef(null)
+  const [item, setItem] = useState({
+      id: selected.id,
+      name: selected.name,
+      description: selected.description,
+      type: selected.type,
+      brand: selected.brand,
+      supplier: selected.supplier,
+      serial: selected.serial_no,
+      code: selected.asset_code,
+      location: selected.location,
+      date: selected.date_acquired,
+      status: selected.status,
+      recipient: selected.recipient,
+  });
 
-    const [item, setItem] = useState({
-        id: selected.id,
-        name: selected.name,
-        description: selected.description,
-        type: selected.type,
-        brand: selected.brand,
-        supplier: selected.supplier,
-        serial: selected.serial_no,
-        code: selected.asset_code,
-        location: selected.location,
-        date: selected.date_acquired,
-        status: selected.status,
-        recipient: selected.recipient,
-        user_id: userData.id,
-    })
+  const [errors, setErrors] = useState({});
+  const [selectedOption, setSelectedOption] = useState('');
+  const [showInput, setShowInput] = useState(false);
 
-    const handleChange = (e) => {
-        setItem({ ...item, [e.target.name]: e.target.value });
-    };
+  const validate = () => {
+      const newErrors = {};
+      if (!item.name) newErrors.name = 'Item name is required';
+      if (!item.description) newErrors.description = 'Description is required';
+      if (!item.brand) newErrors.brand = 'Brand is required';
+      if (!item.supplier) newErrors.supplier = 'Supplier is required';
+      if (!item.location) newErrors.location = 'Location is required';
+      if (selectedOption === 'Donate' && !item.recipient) newErrors.recipient = 'Recipient is required when status is Donate';
+      return newErrors;
+  };
 
-    const [selectedOption, setSelectedOption] = useState('');
-    const [showInput, setShowInput] = useState(false);
+  const handleChange = (e) => {
+      setItem({ ...item, [e.target.name]: e.target.value });
+  };
 
-    const handleSelect = (e) => {
-        setItem({ ...item, [e.target.name]: e.target.value });
-        setSelectedOption(e.target.value);
-        console.log(selectedOption);
-        console.log(item.status);
-        setShowInput(e.target.value === 'Donate'); // Show input when Option Donate is selected
-    };
+  const handleSelect = (e) => {
+      setItem({ ...item, [e.target.name]: e.target.value });
+      setSelectedOption(e.target.value);
+      setShowInput(e.target.value === 'Donate'); // Show input when Option Donate is selected
+  };
 
-    const HandleSubmit = (e) => {
-      const data = item;
-      axios.post('http://localhost:5000/asset-update', data)
-      .then(function (response) {
-        console.log(response);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+  const handleSubmit = (e) => {
+      e.preventDefault();
+      const newErrors = validate();
+      if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+      } else {
+          const data = item;
+          axios.post('http://localhost:5000/asset-update', data)
+              .then(function (response) {
+                  console.log(response);
+              })
+              .catch(function (error) {
+                  console.log(error);
+              });
+          onClose();
+      }
+  };
 
-      onClose();
-    }
-
-  
-    return (
+  return (
       <>
-        <Button onClick={onOpen}>Details</Button>
-  
-        <Modal
-          initialFocusRef={initialRef}
-          finalFocusRef={finalRef}
-          isOpen={isOpen}
-          onClose={onClose}
-        >
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Item Details</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody pb={6}>
+          <Button onClick={onOpen}>Details</Button>
 
-            <form onSubmit={HandleSubmit}>
-              
-              <FormControl isReadOnly>
-                  <FormLabel>Asset Code</FormLabel>
-                  <Input  value={item.code}
-                          type="text" />
-              </FormControl>
+          <Modal initialFocusRef={initialRef} finalFocusRef={finalRef} isOpen={isOpen} onClose={onClose}>
+              <ModalOverlay />
+              <ModalContent>
+                  <ModalHeader>Item Details</ModalHeader>
+                  <ModalCloseButton />
+                  <ModalBody pb={6}>
+                      <form onSubmit={handleSubmit}>
+                          <FormControl isReadOnly>
+                              <FormLabel>Asset Code</FormLabel>
+                              <Input value={item.code} type="text" />
+                          </FormControl>
 
-              <FormControl>
-                  <FormLabel>Item Name</FormLabel>
-                  <Input  name='name'
-                          value={item.name}
-                          onChange={handleChange}
-                          type="text" />
-              </FormControl>
-    
-              <FormControl>
-                  <FormLabel>Item Description</FormLabel>
-                  <Input  name='description'
-                          value={item.description}
-                          onChange={handleChange}
-                          type="text" />
-              </FormControl>
+                          <FormControl isInvalid={errors.name}>
+                              <FormLabel>Item Name</FormLabel>
+                              <Input name='name' value={item.name} onChange={handleChange} type="text" />
+                              {errors.name && <FormErrorMessage>{errors.name}</FormErrorMessage>}
+                          </FormControl>
 
-              <FormControl isReadOnly>
-                  <FormLabel>Item Type</FormLabel>
-                  <Input  value={item.type}
-                          type="text" />
-              </FormControl>
+                          <FormControl isInvalid={errors.description}>
+                              <FormLabel>Item Description</FormLabel>
+                              <Input name='description' value={item.description} onChange={handleChange} type="text" />
+                              {errors.description && <FormErrorMessage>{errors.description}</FormErrorMessage>}
+                          </FormControl>
 
-              <FormControl>
-                  <FormLabel>Brand Name</FormLabel>
-                  <Input  name='brand'
-                          value={item.brand}
-                          onChange={handleChange}
-                          type="text" />
-              </FormControl>
+                          <FormControl isReadOnly>
+                              <FormLabel>Item Type</FormLabel>
+                              <Input value={item.type} type="text" />
+                          </FormControl>
 
-              <FormControl>
-                  <FormLabel>Supplier Name</FormLabel>
-                  <Input  name='supplier'
-                          value={item.supplier}
-                          onChange={handleChange}
-                          type="text" />
-              </FormControl>
+                          <FormControl isInvalid={errors.brand}>
+                              <FormLabel>Brand Name</FormLabel>
+                              <Input name='brand' value={item.brand} onChange={handleChange} type="text" />
+                              {errors.brand && <FormErrorMessage>{errors.brand}</FormErrorMessage>}
+                          </FormControl>
 
-              <FormControl isReadOnly>
-                  <FormLabel>Serial Number</FormLabel>
-                  <Input  value={item.serial}
-                          type="text" />
-              </FormControl>
+                          <FormControl isInvalid={errors.supplier}>
+                              <FormLabel>Supplier Name</FormLabel>
+                              <Input name='supplier' value={item.supplier} onChange={handleChange} type="text" />
+                              {errors.supplier && <FormErrorMessage>{errors.supplier}</FormErrorMessage>}
+                          </FormControl>
 
-              <FormControl isReadOnly>
-                  <FormLabel>Date Aquired</FormLabel>
-                  <Input  value={new Date(item.date).toLocaleDateString()}
-                          size="md"/>
-              </FormControl>
+                          <FormControl isReadOnly>
+                              <FormLabel>Serial Number</FormLabel>
+                              <Input value={item.serial} type="text" />
+                          </FormControl>
 
-              <FormControl>
-                  <FormLabel>Location</FormLabel>
-                  <Input  name='location'
-                          value={item.location}
-                          onChange={handleChange}
-                          type="text" />
-              </FormControl>
+                          <FormControl isReadOnly>
+                              <FormLabel>Date Acquired</FormLabel>
+                              <Input value={new Date(item.date).toLocaleDateString()} size="md" />
+                          </FormControl>
 
-              <FormControl>
-                  <FormLabel>Current Status</FormLabel>
-                  <Select name='status' value={item.status} onChange={handleSelect}>
-                    <option value="Active">Active</option>
-                    <option value="Defective">Defective</option>
-                    <option value="Dispose">Dispose</option>
-                    <option value="Donate">Donate</option>
-                  </Select>
-                  {selectedOption && <p id='status-notif'>new selected status: {selectedOption}</p>}
+                          <FormControl isInvalid={errors.location}>
+                              <FormLabel>Location</FormLabel>
+                              <Input name='location' value={item.location} onChange={handleChange} type="text" />
+                              {errors.location && <FormErrorMessage>{errors.location}</FormErrorMessage>}
+                          </FormControl>
 
-              </FormControl>
-              {showInput && (
-                  <FormControl>
-                  <FormLabel>Recipient</FormLabel>
-                  <Input name='recipient'
-                          value={item.recipient}
-                          onChange={handleChange}
-                          type="text"/>
-                  </FormControl>
-              )}
+                          <FormControl isInvalid={errors.status}>
+                              <FormLabel>Current Status</FormLabel>
+                              <Select name='status' value={item.status} onChange={handleSelect}>
+                                  <option value="Active">Active</option>
+                                  <option value="Defective">Defective</option>
+                                  <option value="Dispose">Dispose</option>
+                                  <option value="Donate">Donate</option>
+                              </Select>
+                          </FormControl>
+                          {selectedOption && <p id='status-notif'>new selected status: {selectedOption}</p>}
 
-              <Button type='submit' colorScheme='blue' mr={3}>
-                  Update
-              </Button>
-              <Button onClick={onClose}>Cancel</Button>
+                          {showInput && (
+                              <FormControl isInvalid={errors.recipient}>
+                                  <FormLabel>Recipient</FormLabel>
+                                  <Input name='recipient' value={item.recipient} onChange={handleChange} type="text" />
+                                  {errors.recipient && <FormErrorMessage>{errors.recipient}</FormErrorMessage>}
+                              </FormControl>
+                          )}
 
-            </form>
-            </ModalBody>
-
-          </ModalContent>
-        </Modal>
+                          <Button type='submit' colorScheme='blue' mr={3}>
+                              Update
+                          </Button>
+                          <Button onClick={onClose}>Cancel</Button>
+                      </form>
+                  </ModalBody>
+              </ModalContent>
+          </Modal>
       </>
-    )
-  }
+  );
+}
 
 
 export default function TechAsset(){
@@ -352,10 +343,10 @@ export default function TechAsset(){
   const [searchItem ,setSearchItem] = useState('');
 
   useEffect(() => {
-    const userData = JSON.parse(sessionStorage.getItem('account'));
-    if (!userData) {
-      linkTo('/login');
-    } else {
+    // const userData = JSON.parse(sessionStorage.getItem('account'));
+    // if (!userData) {
+    //   linkTo('/login');
+    // } else {
       // Fetch data from the SQL database
       axios.get('http://localhost:5000/asset/')
         .then(response => {
@@ -365,7 +356,6 @@ export default function TechAsset(){
         .catch(error => {
           console.error(error);
         });
-    }
   }, [linkTo]);
 
 
@@ -398,7 +388,7 @@ export default function TechAsset(){
                 <Thead>
                     <Tr position={'sticky'} top={0} bgColor={'facebook.400'} zIndex={'1'}>
                         <Th color={'white'}>Asset Code</Th>
-                        <Th color={'white'}>Name</Th>
+                        <Th color={'white'}>Type</Th>
                         <Th color={'white'}>Brand</Th>
                         <Th color={'white'}>Serial No.</Th>
                         <Th color={'white'}>Date Aquired</Th>
@@ -415,7 +405,7 @@ export default function TechAsset(){
                         else if(srchVal.asset_code.toLowerCase().includes(searchItem.toLowerCase())){
                           return srchVal;
                         }
-                        else if(srchVal.name.toLowerCase().includes(searchItem.toLowerCase())){
+                        else if(srchVal.type.toLowerCase().includes(searchItem.toLowerCase())){
                           return srchVal;
                         }
                         else if(srchVal.brand.toLowerCase().includes(searchItem.toLowerCase())){
@@ -437,7 +427,7 @@ export default function TechAsset(){
                         return(
                           <Tr key={index}>
                             <Td>{item.asset_code}</Td>
-                            <Td>{item.name}</Td>
+                            <Td>{item.type}</Td>
                             <Td>{item.brand}</Td>
                             <Td>{item.serial_no}</Td>
                             <Td>{formatDateString(item.date_acquired)}</Td>
@@ -456,45 +446,3 @@ export default function TechAsset(){
 }
 
 
-/*
-  <div id='asset-header'>
-                <Heading size='xl'>List of Items:</Heading>
-                <CreateItem />
-            </div>
-
-            <TableContainer>
-                <Table className='asset-table' variant='simple'>
-
-                    <Thead className='asset-head'>
-                    <Tr>
-                        <Th>Asset Code</Th>
-                        <Th>Name</Th>
-                        <Th>Brand</Th>
-                        <Th>Serial No.</Th>
-                        <Th>Date Aquired</Th>
-                        <Th>Location</Th>
-                        <Th>Status</Th>
-                        <Th></Th>
-                    </Tr>
-                    </Thead>
-                    <Tbody>
-                      {data.map((item , index ) => {
-                        return(
-                          <Tr key={index}>
-                            <Td>{item.asset_code}</Td>
-                            <Td>{item.name}</Td>
-                            <Td>{item.brand}</Td>
-                            <Td>{item.serial_no}</Td>
-                            <Td>{formatDateString(item.date_acquired)}</Td>
-                            <Td>{item.location}</Td>
-                            <Td>{item.status}</Td>
-                            <Td><UpdateItem selected={item} /></Td>
-                          </Tr>
-                        )
-                      })}
-                    </Tbody>
-                </Table>
-            </TableContainer>
-
-
-*/
