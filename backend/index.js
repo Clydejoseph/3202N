@@ -11,6 +11,8 @@ app.use(bp.urlencoded({ extended: true }))
 app.use(cors())
 app.use(express.json())
 const secretKey = 'imong_mama';
+const refreshTokenSecret = 'imong_mama_refresh'; // A different secret key for refresh tokens
+const refreshTokens = [];
 
 var connection = mysql.createConnection({
   host     : 'bkuiydztdar7unewbvuk-mysql.services.clever-cloud.com',
