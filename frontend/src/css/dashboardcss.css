@@ -1,14 +1,14 @@
-
-.navbar {
+.container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background-color: #333;
-    color: #fff; 
+    background-color: #385898;
+    color: #ffffff;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
-.navbar-button {
+  
+  .button {
     padding: 10px 20px;
     background-color: transparent;
     color: #fff;
@@ -17,8 +17,10 @@
     font-size: 16px;
     text-transform: uppercase;
     transition: background-color 0.3s ease;
-}
-
-.navbar-button:hover {
+  }
+  
+  .button:hover {
     background-color: rgba(255, 7, 7, 0.1);
-}
+  }
+
+  
