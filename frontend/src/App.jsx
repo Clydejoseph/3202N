@@ -4,6 +4,8 @@ import TechAsset from './pages/labTech/Tech-Asset';
 import { useState, useEffect, React } from "react";
 import axios from "axios";
 import config from "./config";
+import '../src/css/Login.css';
+
 
 function App() {
   const navigate = useNavigate();
@@ -25,10 +27,12 @@ function App() {
     };
 
     return (
-      <div>
+      <div className="login-container">
+        <div className="login-form">
         <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
         <button onClick={handleLogin}>Login</button>
+        </div>
       </div>
     );
   };
