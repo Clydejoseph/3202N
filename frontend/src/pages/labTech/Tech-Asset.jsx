@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import {useNavigate} from 'react-router-dom'
+import config from '../../config';
 import {
     Table,
     Thead,
@@ -82,7 +83,7 @@ function CreateItem() {
           setErrors(newErrors);
       } else {
           const data = item;
-          axios.post('http://localhost:5000/asset-create', data)
+          axios.post(`${config.API}/asset-create`, data)
               .then(function (response) {
                   console.log(response);
               })
@@ -232,7 +233,7 @@ function UpdateItem({ selected }) {
           setErrors(newErrors);
       } else {
           const data = item;
-          axios.post('http://localhost:5000/asset-update', data)
+          axios.post(`${config.API}/asset-update`, data)
               .then(function (response) {
                   console.log(response);
               })
@@ -348,7 +349,7 @@ export default function TechAsset(){
     //   linkTo('/login');
     // } else {
       // Fetch data from the SQL database
-      axios.get('http://localhost:5000/asset/')
+      axios.get(`${config.API}/asset/`)
         .then(response => {
           setData(response.data);
           // console.log(response.data);

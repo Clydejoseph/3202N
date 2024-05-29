@@ -18,7 +18,7 @@ function Dashboard() {
     const [item, setItem] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/itemcount').then((res) => {
+        axios.get(`${config.API}/itemcount`).then((res) => {
             setItem(res.data);
         }).catch((error) => {
             console.log(error);
