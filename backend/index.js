@@ -11,8 +11,6 @@ app.use(bp.urlencoded({ extended: true }))
 app.use(cors())
 app.use(express.json())
 const secretKey = 'imong_mama';
-const refreshTokenSecret = 'imong_mama_refresh'; // A different secret key for refresh tokens
-const refreshTokens = [];
 
 var connection = mysql.createConnection({
   host     : 'bkuiydztdar7unewbvuk-mysql.services.clever-cloud.com',
@@ -99,9 +97,9 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Protect your routes
-app.get('/itemcount', authenticateToken, (req, res) => {
-  const sql = "SELECT c.id , c.name , COUNT(DISTINCT i.id) as count FROM category c LEFT JOIN item i on c.id = i.categoryID  GROUP BY c.id;";
+app.get('/itemcount' , authenticateToken, (req , res) =>{
+  const sql = "SELECT c.id , c.name , COUNT(DISTINCT i.id) as count FROM category c LEFT JOIN item i on c.id = i.categoryID  GROUP BY c.id;"
+
   connection.query(sql , (err,result) =>{
     if(err){
       return res.status(500).json({ error: 'Server error' });
@@ -110,10 +108,12 @@ app.get('/itemcount', authenticateToken, (req, res) => {
       return res.status(200).send(result);
     }
   })
-});
+})
 
-app.get('/newequipment', authenticateToken, (err, res) => {
+
+app.get('/newequipment' , authenticateToken, (err ,res) =>{
   const sql = 'SELECT i.asset_code ,i.name , i.serial_no , i.location, i.brand, c.name FROM item i, category c WHERE i. status = "New" AND i.categoryID = c.id;';
+
   connection.query(sql ,(err, result) =>{
     if(err){
       return res.status(500).json({ error: 'Server error' });
@@ -122,6 +122,181 @@ app.get('/newequipment', authenticateToken, (err, res) => {
       return res.status(200).send(result);
     }  
   })
+
+})
+
+app.get('/actives' , authenticateToken, (err ,res) =>{
+  const sql = 'SELECT COUNT(*) as count FROM item WHERE status = "Active";';
+
+  connection.query(sql ,(err, result) =>{
+    if(err){
+      return res.status(500).json({ error: 'Server error' });
+    }
+ 
+    res.json(result);
+  })
+
+})
+app.get('/defective' , authenticateToken, (err ,res) =>{
+  const sql = 'SELECT COUNT(*) as count FROM item WHERE status = "Defective";';
+
+  connection.query(sql ,(err, result) =>{
+    if(err){
+      return res.status(500).json({ error: 'Server error' });
+    }
+    else{
+      return res.status(200).send(result);
+    }  
+  })
+
+})
+app.get('/dispose' , authenticateToken, (err ,res) =>{
+  const sql = 'SELECT COUNT(*) as count FROM item WHERE status = "Dispose";';
+
+  connection.query(sql ,(err, result) =>{
+    if(err){
+      return res.status(500).json({ error: 'Server error' });
+    }
+    else{
+      return res.status(200).send(result);
+    }  
+  })
+
+})
+app.get('/donate' , authenticateToken, (err ,res) =>{
+  const sql = 'SELECT COUNT(*) as count FROM item WHERE status = "Donate";';
+// app.get('/barChartData' , (req , res) =>{
+//   const sql = "SELECT COUNT(*) AS item_count, MONTH(i.date_acquired) AS month_number, c.name AS item_name FROM item i, category c WHERE i.categoryID = c.id GROUP BY categoryID;"
+
+  // connection.query(sql ,(err, result) =>{
+  //   if(err){
+  //     return res.status(500).json({ error: 'Server error' });
+  //   }
+  //   else{
+  //     return res.status(200).send(result);
+  //   }  
+  // })
+  connection.query(sql , (err,result) =>{
+    if(err){
+      return res.status(500).json({ error: 'Server error' });
+    }
+    else{
+      return res.status(200).send(result);
+    }
+  })
+})
+
+
+app.get('/asset', authenticateToken, async function (req, res) {
+    // req.body
+   
+    connection.query('SELECT i.*, c.name AS type FROM `item` i, `category` c WHERE i.categoryID = c.id ORDER BY date_acquired DESC ;', function (error, results, fields) {
+      if (error) throw error;
+      // console.log(results);
+      res.json(results) //send
+    });   
+})
+
+app.post('/asset-create', (req, res) => {
+    const item = req.body;
+  
+    connection.query(
+      "INSERT INTO item (name, description, brand, date_acquired, supplier, serial_no, asset_code, location, status, categoryID) VALUES (?,?,?,?,?,?,?,?,?,?)",
+      [
+        item.name,
+        item.description,
+        item.brand,
+        item.date_acquired,
+        item.supplier,
+        item.serial,
+        item.asset_code,
+        item.location,
+        item.status,
+        item.type,
+      ],
+      (error, result) => {
+        if (error) {
+          console.log(error);
+        }
+  
+        connection.query(
+          "SELECT CURRENT_DATE() AS 'current_date', i.id AS 'ID', CONCAT(c.category_code, '-', RIGHT(DATE_FORMAT(i.date_acquired, '%Y'),2), '-', LPAD(i.id, 3, '0')) AS asset_code FROM item i, category c WHERE i.categoryID = c.id ORDER BY i.id DESC LIMIT 1",
+          (error, results) => {
+            if(error){
+              console.log(error);
+            }
+
+            const newAssetCode = results[0].asset_code;
+  
+            connection.query(
+              "UPDATE item SET asset_code = ? WHERE id = ?",
+              [newAssetCode, result.insertId],
+              (error, updateResult) => {
+                if (error) {
+                  console.log(error);
+                }
+                // return res.json({ item });
+              }
+            );
+          }
+        );
+      }
+    );
 });
 
-app.listen(process.env.PORT || 5000);
+app.post('/asset-update', (req, res) => {
+    res.json({ message: 'Data received successfully' });
+  
+    const item = req.body;
+    
+    connection.query("UPDATE item SET name = '" +item.name+ "', description = '" +item.description+ "', brand = '" +item.brand+ "', supplier = '" +item.supplier+ "', location = '" +item.location+ "', status = '" +item.status+ "', recipient = '" +item.recipient+ "' WHERE id = '" + item.id + "'", 
+    (error, result) => {
+        if(error){
+          console.log(error);
+        }
+    })
+    
+  });
+
+
+
+// app.post('/user-update', async function (req, res){
+//   const data = req.body;
+
+//   connection.query(
+//     "UPDATE user SET fname = '" +data.fname+ "', lname = '" +data.lname+ "', contact_no = '" +data.contact_no+ "', authority = '" +data.authority+ "', email = '" +data.email+ "', password = '" +data.password+ "', status = '" +data.status+ "' WHERE id = " +data.id,
+//     (error, result) => {
+//       if(error){
+//         console.log(error);
+//       }
+//     }
+//   )
+// })
+
+// app.post('/user-create', (req, res) => {
+//   const data = req.body;
+
+//   connection.query(
+//     "INSERT INTO user (fname, lname, contact_no, date_created, authority, email, password, status) VALUES (?,?,?, CURDATE(),?,?,?,?)",
+//     [
+//       data.fname,
+//       data.lname,
+//       data.contact_no,
+//       data.authority,
+//       data.email,
+//       data.password,
+//       data.status
+//     ],
+//     (error, result) => {
+//       if (error) {
+//         console.log(error);
+//       }
+//     }
+//   );
+// });
+
+
+  
+
+
+  app.listen(process.env.PORT || 5000)

@@ -332,25 +332,25 @@ function UpdateItem({ selected }) {
 
 export default function TechAsset(){
 
-  const linkTo = useNavigate();
+    const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [searchItem ,setSearchItem] = useState('');
 
   useEffect(() => {
-    // const userData = JSON.parse(sessionStorage.getItem('account'));
-    // if (!userData) {
-    //   linkTo('/login');
-    // } else {
-      // Fetch data from the SQL database
-      axios.get(`${config.API}/asset/`)
-        .then(response => {
-          setData(response.data);
-          // console.log(response.data);
-        })
-        .catch(error => {
-          console.error(error);
-        });
-  }, [linkTo]);
+    const fetchAssets = async () => {
+      try {
+        const response = await axios.get(`${config.API}/asset`);
+        setData(response.data);
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          navigate('/');
+        }
+      }
+    };
+
+    fetchAssets();
+  }, [navigate]);
 
 
 
